@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"shorturl/internal/config"
+	deleteurl "shorturl/internal/http-server/handlers/url/delete"
 	"shorturl/internal/http-server/handlers/url/redirect"
 	"shorturl/internal/http-server/handlers/url/save"
 	"shorturl/internal/http-server/middleware"
@@ -43,6 +44,8 @@ func main() {
 
 	router.Post("/url", save.New(log, storage))
 	router.Get("/{alias}", redirect.New(log, storage))
+	router.Delete("/{alias}", deleteurl.New(log, storage))
+
 	log.Info("starting http server", slog.String("address", cfg.Address))
 
 	srv := &http.Server{
