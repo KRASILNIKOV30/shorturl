@@ -11,6 +11,7 @@ import (
 type Config struct {
 	Env         string `yaml:"env" env-required:"true"`
 	StoragePath string `yaml:"storage_path" env-required:"true"`
+	FallbackURL string `yaml:"fallback_url" env-default:""`
 	HTTPServer  `yaml:"http_server"`
 }
 
