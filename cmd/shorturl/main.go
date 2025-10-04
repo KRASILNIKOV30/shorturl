@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"os"
 	"shorturl/internal/config"
-	save "shorturl/internal/http-server/handlers/url"
+	"shorturl/internal/http-server/handlers/url/redirect"
+	"shorturl/internal/http-server/handlers/url/save"
 	"shorturl/internal/http-server/middleware"
 	"shorturl/internal/lib/logger/sl"
 	"shorturl/internal/lib/logger/slogpretty"
@@ -41,7 +42,7 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	router.Post("/url", save.New(log, storage))
-
+	router.Get("/{alias}", redirect.New(log, storage))
 	log.Info("starting http server", slog.String("address", cfg.Address))
 
 	srv := &http.Server{
