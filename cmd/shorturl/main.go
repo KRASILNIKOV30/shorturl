@@ -2,8 +2,10 @@ package main
 
 import (
 	"log/slog"
+	"net/http"
 	"os"
 	"shorturl/internal/config"
+	save "shorturl/internal/http-server/handlers/url"
 	"shorturl/internal/http-server/middleware"
 	"shorturl/internal/lib/logger/sl"
 	"shorturl/internal/lib/logger/slogpretty"
@@ -31,14 +33,28 @@ func main() {
 		return
 	}
 
-	_ = storage
-
 	router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
 	router.Use(logger.New(log))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
+
+	router.Post("/url", save.New(log, storage))
+
+	log.Info("starting http server", slog.String("address", cfg.Address))
+
+	srv := &http.Server{
+		Addr:         cfg.Address,
+		Handler:      router,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.Timeout,
+	}
+
+	if err := srv.ListenAndServe(); err != nil {
+		log.Error("failed to start http server", sl.Err(err))
+	}
 }
 
 func setupLogger(env string) *slog.Logger {
