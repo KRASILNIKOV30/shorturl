@@ -12,6 +12,8 @@ import (
 	"github.com/go-chi/render"
 )
 
+const fallbackUrl = "https://google.com"
+
 type URLGetter interface {
 	GetURL(alias string) (string, error)
 }
@@ -33,11 +35,8 @@ func New(log *slog.Logger, urlGetter URLGetter) http.HandlerFunc {
 
 		resUrl, err := urlGetter.GetURL(alias)
 		if errors.Is(err, storage.ErrURLNotFound) {
-			log.Error("url not found", slog.String("alias", alias))
-			render.JSON(w, r, api.Error("not found"))
-			return
-		}
-		if err != nil {
+			resUrl = fallbackUrl
+		} else if err != nil {
 			log.Error("error getting url", err, slog.String("alias", alias))
 			render.JSON(w, r, api.Error("internal error"))
 			return
